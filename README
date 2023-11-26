@@ -1,0 +1,121 @@
+# Out of free firmware for Ti-am62x M4/MCU for Phytec power board
+
+## Project: github.com/tux-evse/ti-am62x-m4-firmware
+
+This code interfaces Phytec power board on Ti-AM62x. It runs on Ti Soc/M4-MCU and exposes through rpmsg/virtio
+mechanism a set of protobuf messages to communicate with Linux. Linux ti-am62x-binding-rs companion is written
+in rust and is available from the same github project.
+
+This code is a fork/customization from Pionix demonstration Everest firmware for Phytec/Am62x.
+It only requirer Ti ARM-CGT-CLANG & MCU-PLUS-SDK-AM62X to be recompiled and compiles independently
+of Everest framework.
+
+## Reference
+* Ti-tools AM62x/M4 X-chain: https://software-dl.ti.com/processor-sdk-linux/esd/AM64X/latest/exports/docs/linux/Foundational_Components_IPC64x.html
+* Linux firmware companion: https://github.com/Tux-Evse/ti-am62x-binding-rs.git
+* Pionix original code: https://github.com/PionixPublic/ti-am62x-evse-sdk.git
+
+## Documentation
+* https://elinux.org/Beagleboard:BeagleBoneBlack_Debian#TI_PRU_Code_Generation_Tools
+* https://github.com/MarkAYoder/PRUCookbook/blob/master/docs/03details/details.adoc
+* https://software-dl.ti.com/codegen/docs/tiarmclang/compiler_tools_user_guide/
+
+## Compilation
+
+### Install Ti/Sitara SDK
+
+* Compiler: https://www.ti.com/tool/download/ARM-CGT-CLANG/3.2.0.LTS
+* Sysroot: https://www.ti.com/tool/SYSCONFIG#downloads
+* SDK: https://www.ti.com/tool/download/MCU-PLUS-SDK-AM62X/09.00.00.19
+
+### Check/Install missing dependencies
+* ldd ./ti-cgt-armllvm_3.2.0.LTS/bin/tiarmclang
+* dnf/zypper/apt install libncurses5
+
+## SDK compilation
+
+### Customize import.mak to match your installation path
+```bash
+cat import.mak
+   HOME:=$(HOME)/Workspace/Tux-Evse/Ti
+   CGT_GCC_ARM_PATH=$(HOME)/ti-cgt-armllvm_3.2.0.LTS
+   DEVICE ?= am62x
+   CGT_ARMLLVM_VERSION=3.2.0.LTS
+   SYSCONFIG_VERSION=1.18
+```
+
+### Fix ClockP_deinit interface bug and build SDK
+
+Search for ClockP_deinit remove (ulong tic) to match with free-rtos public API.
+If you did not mess up ```make``` should build library and samples.
+
+## Buiding out-of-tree ti-am62x-m4-firmware
+
+If you have installed Ti SDK within ../Ti as within following directory tree,
+then a simple make within sample directory should do the job
+
+```bash
+git clone git@github.com:tux-evse/ti-am62x-m4-firmware.git
+cd ti-am62x-m4-firmware && make
+scp Firmware/am62-mcu-m4f0_0-fw My-Board-IP:/usr/local/firmware
+```
+
+```bash
+tree -L2 ..
+├── Ti
+│   ├── mcu_plus_sdk_am62x_09_00_00_19
+│   ├── ti-sysconfig_1.18
+│   ├── ti-cgt-armllvm_3.2.0.LTS
+├── ti-am62x-binding-rs
+│   ├── afb-binding
+│   ├── Cargo.lock
+│   ├── Cargo.toml
+│   ├── Fulup-README
+│   └── ti-rpmsg
+├── ti-am62x-m4-firmware
+│   ├── etc
+│   ├── Firmware
+│   ├── LICENSE
+│   ├── Makefile
+│   ├── README
+│   └── src
+```
+
+## installing sample firmware on your board
+
+!! Warning: following step may depend on your BSP OS configuration
+
+Check firmware is declared within your kernel
+```
+cat /sys/class/remoteproc/remoteproc0/firmware
+```
+
+Place your firmware in the configured location
+```
+scp Firmware/am62-mcu-m4f0_0-fw root@phytec-power:/usr/lib/firmware/
+```
+
+Connect with a terminal emulateur to M4 serial console
+
+```bash
+# dev name may change, but tipically
+#  - /dev/ttyUSB0 is the am62x Linux console
+#  - /dev/ttyUSB1 is the M4 console
+picocom -b 115200 /dev/ttyUSB1
+```
+
+Start stop firmware
+```
+cat /sys/class/remoteproc/remoteproc0/firmware
+echo start >/sys/class/remoteproc/remoteproc0/state
+```
+
+
+Fulup TDB
+---------
+Dans la // main loop (fichier main_task).
+Tous les xx cycles send heartbeat
+
+
+
+

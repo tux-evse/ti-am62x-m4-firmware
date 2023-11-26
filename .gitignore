@@ -1,0 +1,9 @@
+Firmware/
+obj/
+generated/
+*.rprc
+*.map
+*.out
+*_xip
+*_fs
+*.appimage
