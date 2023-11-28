@@ -273,9 +273,9 @@ void main_task(void* args) {
              .message.heartbeat = heartbeat,
            };
            if (rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
-               DebugP_log("Success Send timeout \r\n");
+               DebugP_log("Success Send heartbeat \r\n");
            } else {
-               DebugP_log("Fail Send timeout \r\n");
+               DebugP_log("Fail Send heartbeat \r\n");
            }
         }
     }

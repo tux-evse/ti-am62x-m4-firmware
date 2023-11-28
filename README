@@ -30,7 +30,8 @@ of Everest framework.
 
 ### Check/Install missing dependencies
 * ldd ./ti-cgt-armllvm_3.2.0.LTS/bin/tiarmclang
-* dnf/zypper/apt install libncurses5
+* zypper/apt install libncurses5
+* Fedora sudo ln -sf /usr/lib64/libncurses.so.? /usr/lib64/libtinfo.so.5
 
 ## SDK compilation
 
@@ -55,12 +56,6 @@ If you have installed Ti SDK within ../Ti as within following directory tree,
 then a simple make within sample directory should do the job
 
 ```bash
-git clone git@github.com:tux-evse/ti-am62x-m4-firmware.git
-cd ti-am62x-m4-firmware && make
-scp Firmware/am62-mcu-m4f0_0-fw My-Board-IP:/usr/local/firmware
-```
-
-```bash
 tree -L2 ..
 ├── Ti
 │   ├── mcu_plus_sdk_am62x_09_00_00_19
@@ -81,6 +76,12 @@ tree -L2 ..
 │   └── src
 ```
 
+```bash
+git clone git@github.com:tux-evse/ti-am62x-m4-firmware.git
+cd ti-am62x-m4-firmware && make
+scp Firmware/am62-mcu-m4f0_0-fw My-Board-IP:/usr/local/firmware
+```
+
 ## installing sample firmware on your board
 
 !! Warning: following step may depend on your BSP OS configuration
@@ -93,6 +94,7 @@ cat /sys/class/remoteproc/remoteproc0/firmware
 Place your firmware in the configured location
 ```
 scp Firmware/am62-mcu-m4f0_0-fw root@phytec-power:/usr/lib/firmware/
+ssh root@phytec-power reboot
 ```
 
 Connect with a terminal emulateur to M4 serial console
@@ -104,18 +106,19 @@ Connect with a terminal emulateur to M4 serial console
 picocom -b 115200 /dev/ttyUSB1
 ```
 
-Start stop firmware
+Check firmware (stop non accepted)
 ```
 cat /sys/class/remoteproc/remoteproc0/firmware
 echo start >/sys/class/remoteproc/remoteproc0/state
 ```
 
-
-Fulup TDB
----------
-Dans la // main loop (fichier main_task).
-Tous les xx cycles send heartbeat
-
+Start ti-am62x binding
+```
+cynagora-admin set '' 'HELLO' '' '*' yes # give access to devtools via TCP port
+/usr/bin/afb-binder -p 1234 -vvv --config /usr/redpesk/ti-am62x-binding-rs/etc/binding-ti-am62x.json
+```
+Connect with your brower on binding devtool debug interface (make phytec-power host match your config)
+http://phytec-power:1234/devtools
 
 
 

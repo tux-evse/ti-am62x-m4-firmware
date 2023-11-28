@@ -1,8 +1,8 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM62x" --package "ALW" --part "Default" --context "m4fss0-0" --product "MCU_PLUS_SDK_AM62x@09.00.00"
- * @versions {"tool":"1.16.1+2960"}
+ * @cliArgs --device "AM62x" --package "ALW" --part "Default" --context "m4fss0-0" --product "MCU_PLUS_SDK_AM62x@08.05.00"
+ * @versions {"tool":"1.15.0+2826"}
  */
 
 /**
@@ -10,8 +10,6 @@
  */
 const gpio            = scripting.addModule("/drivers/gpio/gpio", {}, false);
 const gpio1           = gpio.addInstance();
-const i2c             = scripting.addModule("/drivers/i2c/i2c", {}, false);
-const i2c1            = i2c.addInstance();
 const ipc             = scripting.addModule("/drivers/ipc/ipc");
 const mcspi           = scripting.addModule("/drivers/mcspi/mcspi", {}, false);
 const mcspi1          = mcspi.addInstance();
@@ -37,16 +35,7 @@ gpio1.$name                    = "AM62_R_ENABLE";
 gpio1.pinDir                   = "OUTPUT";
 gpio1.MCU_GPIO.$assign         = "MCU_GPIO0";
 gpio1.MCU_GPIO.gpioPin.pu_pd   = "pu";
-gpio1.MCU_GPIO.gpioPin.$assign = "MCU_MCAN0_RX";
-
-i2c1.$name               = "CONFIG_MCU_I2C0";
-i2c1.bitRate             = "100KHZ";
-i2c1.advanced            = true;
-i2c1.ownSlaveAddr1       = 0x20;
-i2c1.MCU_I2C.SCL.rx      = false;
-i2c1.MCU_I2C.SCL.$assign = "MCU_I2C0_SCL";
-i2c1.MCU_I2C.SDA.rx      = false;
-i2c1.MCU_I2C.SDA.$assign = "MCU_I2C0_SDA";
+gpio1.MCU_GPIO.gpioPin.$assign = "ball.B3";
 
 ipc.r5fss0_0 = "NONE";
 
@@ -57,14 +46,14 @@ mcspi1.inputSelect                     = "0";
 mcspi1.dpe0                            = "DISABLE";
 mcspi1.dpe1                            = "ENABLE";
 mcspi1.MCU_SPI.$assign                 = "MCU_SPI0";
-mcspi1.MCU_SPI.CLK.$assign             = "MCU_SPI0_CLK";
-mcspi1.MCU_SPI.D0.$assign              = "MCU_SPI0_D0";
-mcspi1.MCU_SPI.D1.$assign              = "MCU_SPI0_D1";
+mcspi1.MCU_SPI.CLK.$assign             = "ball.A7";
+mcspi1.MCU_SPI.D0.$assign              = "ball.D9";
+mcspi1.MCU_SPI.D1.$assign              = "ball.C9";
 mcspi1.mcspiChannel[0].$name           = "CONFIG_MCSPI_CH0";
 mcspi1.mcspiChannel[0].advanced        = true;
 mcspi1.mcspiChannel[0].frameFormat     = "POL1_PHA1";
 mcspi1.mcspiChannel[0].bitRate         = 800000;
-mcspi1.mcspiChannel[0].MCU_CSn.$assign = "MCU_SPI0_CS1";
+mcspi1.mcspiChannel[0].MCU_CSn.$assign = "ball.B8";
 
 addr_translate1.$name     = "CONFIG_ADDR_TRANSLATE_REGION0";
 addr_translate1.localAddr = 0x80000000;
@@ -115,7 +104,6 @@ timer1.MCU_TIMER.$assign = "MCU_DMTIMER2";
  * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
  * re-solve from scratch.
  */
-i2c1.MCU_I2C.$suggestSolution                   = "MCU_I2C0";
 debug_log.uartLog.MCU_UART.$suggestSolution     = "MCU_USART0";
-debug_log.uartLog.MCU_UART.RXD.$suggestSolution = "MCU_UART0_RXD";
-debug_log.uartLog.MCU_UART.TXD.$suggestSolution = "MCU_UART0_TXD";
+debug_log.uartLog.MCU_UART.RXD.$suggestSolution = "ball.B5";
+debug_log.uartLog.MCU_UART.TXD.$suggestSolution = "ball.A5";
