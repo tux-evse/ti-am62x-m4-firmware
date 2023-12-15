@@ -37,7 +37,7 @@ of Everest framework.
 
 ### Customize import.mak to match your installation path
 ```bash
-cat import.mak
+cat etc/import.mak
    HOME:=$(HOME)/Workspace/Tux-Evse/Ti
    CGT_GCC_ARM_PATH=$(HOME)/ti-cgt-armllvm_3.2.0.LTS
    DEVICE ?= am62x

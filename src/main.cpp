@@ -258,8 +258,8 @@ void main_task(void* args) {
             /*DebugP_log("FCAM Debug: hi_trg: %d, low_trg: %d, adcs: %d, sigs: %d, msgs: %d\r\n", ovfls, matchs, adcs, sigs,
                        messages_received);*/
 // FCAM: PP signal Added
-            auto pp_signal = sampler.get_latest_pp_signal();
-            DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
+            // auto pp_signal = sampler.get_latest_pp_signal();
+            // DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
             //DebugP_log("PP: hi: %f, PP: dec: %d, valid: 1\r\n", pp_signal.high, pp_signal.high, 1/*pp_signal.valid*/);
 
             last_chore_ts = current_ts;
