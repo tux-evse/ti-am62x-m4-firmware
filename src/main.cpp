@@ -162,7 +162,7 @@ void push_event(const iec61851::Event& event, RPMsg& link) {
 }
 
 void main_task(void* args) {
-    DebugP_log("Hello from ti am62x charger firmware!\r\n");
+    DebugP_log("Hello from ti am62x charger firmware Fulup!\r\n");
 
     //
     // initialize necessary classes
@@ -225,8 +225,8 @@ void main_task(void* args) {
     uint32_t last_chore_ts = ClockP_getTicks();
     uint32_t last_heartbeat_ts = ClockP_getTicks();
 
-    const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 1000);
-    const uint32_t heartbeat_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 3000);
+    const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 50000);
+    const uint32_t heartbeat_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 10000);
 
     while (true) {
         // main loop

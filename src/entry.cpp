@@ -13,6 +13,7 @@
 void main_task(void* args);
 
 int main() {
+
     // mandatory system and board initialization
     System_init();
     Board_init();

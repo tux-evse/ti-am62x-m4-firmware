@@ -82,6 +82,12 @@ cd ti-am62x-m4-firmware && make
 scp Firmware/am62-mcu-m4f0_0-fw My-Board-IP:/usr/local/firmware
 ```
 
+## config your board
+check uboot on
+```
+cat /sys/kernel/debug/remoteproc/remoteproc0/trace0
+```
+
 ## installing sample firmware on your board
 
 !! Warning: following step may depend on your BSP OS configuration
@@ -106,6 +112,11 @@ Connect with a terminal emulateur to M4 serial console
 picocom -b 115200 /dev/ttyUSB1
 ```
 
+Check debug buffer ring
+```
+cat /sys/kernel/debug/remoteproc/remoteproc0/trace0
+```
+
 Check firmware (stop non accepted)
 ```
 cat /sys/class/remoteproc/remoteproc0/firmware
@@ -120,5 +131,8 @@ cynagora-admin set '' 'HELLO' '' '*' yes # give access to devtools via TCP port
 Connect with your brower on binding devtool debug interface (make phytec-power host match your config)
 http://phytec-power:1234/devtools
 
+## WARNING:
+* send tiam62x/pwm=off to move CP from -12 to +12
+* send tiam62x/iec6185=true to enable device protobuf firmware event push
 
 
