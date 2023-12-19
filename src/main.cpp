@@ -272,9 +272,7 @@ void main_task(void* args) {
              .which_message = LowToHigh_heartbeat_tag,
              .message.heartbeat = heartbeat,
            };
-           if (rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
-               DebugP_log("Success Send heartbeat \r\n");
-           } else {
+           if (! rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
                DebugP_log("Fail Send heartbeat \r\n");
            }
         }

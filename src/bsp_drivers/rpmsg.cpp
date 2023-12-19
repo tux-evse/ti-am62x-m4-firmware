@@ -91,9 +91,6 @@ bool RPMsg::send_msg(LowToHigh& msg, uint32_t timeout_ms) {
     const auto timeout_ticks = ClockP_usecToTicks(timeout_ms * 1000);
     int status = RPMessage_send(encode_buf, ostream.bytes_written, CSL_CORE_ID_A53SS0_0, remote_end_point,
                                              RPMessage_getLocalEndPt(&rpmsg_ep), timeout_ticks);
-
-    DebugP_log("Send_Msg status=%d buffer[0x%x, 0x%x] size=%d\r\n", status, encode_buf[0], encode_buf[1], ostream.bytes_written);
-
     return SystemP_SUCCESS == status;
 }
 
