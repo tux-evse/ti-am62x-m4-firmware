@@ -12,6 +12,7 @@ include etc/imports.mak
 
 all:
 	@echo $(MAKE)  -C src all
+	$(MAKE)  -C src/pb_codec all
 	$(MAKE)  -C src all
 
 scrub:
