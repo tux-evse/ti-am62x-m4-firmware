@@ -187,7 +187,7 @@ void FSM::run() {
                 }else // SLAC ongoing or OK (1 or 2)
                 {
                     //5% applied by set_pwm.duty_cycle in main
-                    FsmDcAppyFlag = 0;
+                    FsmDcAppyFlag = 2;
                 }
             }
 

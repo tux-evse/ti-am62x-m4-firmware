@@ -10,6 +10,9 @@
 
 // TMA
 extern uint8_t FsmDcAppyFlag;
+// 0 : default value, apply duty based on PP 
+// 1 : apply duty based on linux given (5%)
+// 2 : apply duty based on PP
 extern uint8_t FsmSetSlacStatus;
 extern float FsmDcAppy;
 //extern float STATE_B_DC;

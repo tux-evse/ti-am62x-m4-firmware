@@ -32,13 +32,13 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             DebugP_log("MODE PWMState_OFF \r\n");
             break;
         case PWMState_ON:
-            if(FsmDcAppyFlag == 1){ //apply PP on CP based on IEC fsm
+            if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
                 fsm.set_pwm_on(FsmDcAppy);
-                DebugP_log(" Case 1 %d and  STATE B Duty 5% to = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
-                //DebugP_log("MODE PWM ON: DC = %d , %f\r\n";set_pwm.duty_cycle,set_pwm.duty_cycle);
-            }else{
+                DebugP_log(" Case 1, flag = %d, Duty = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
+            
+            }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (in B), or == 2 (in C)
                 fsm.set_pwm_on(set_pwm.duty_cycle);
-                DebugP_log(" Case 2 Pwm 5% (by linux) \r\n");
+                DebugP_log(" Case 2, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm.duty_cycle);
             }
             break;
         default:
@@ -66,9 +66,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             break;
         case SLACState_NOK :
             DebugP_log("SLAC STATE = SLACState_NOK \r\n");
-            FsmDcAppy = calcul_dutyCycle(ppcurr_State);
             FsmSetSlacStatus = 3;
-            fsm.set_pwm_on(FsmDcAppy);
             break;
         default:
             DebugP_log("unknown SLACstate message\r\n");
