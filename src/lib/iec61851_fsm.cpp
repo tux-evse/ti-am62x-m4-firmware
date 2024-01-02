@@ -11,7 +11,8 @@
  *  ********************************************** */
 // TMA Patch: flag to replace information come from Linux
 uint8_t FsmDcAppyFlag = 0;
-uint8_t FsmSetSlacStatus = 0;  
+uint8_t FsmSetSlacStatus = 0;
+extern float set_pwm_DC_given;
 
 // TMA Declaration Var to get DC in function of PP
 float FsmDcAppy = 0;
@@ -159,38 +160,45 @@ void FSM::run() {
             if (prev_state == CPState::A || prev_state == CPState::Disabled) {
                 push_event(Event::CarPluggedIn);
                 simplified_mode = false;
-                //
-               if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
-                        // TMA : B state get PP Current state
-                        read_pp_state(ppcurr_State);
-                        DebugP_log("PP STATE A to B : %d  \r\n",ppcurr_State);
-                        if(ppcurr_State == (PPState)0){
-                            push_event(Event::PpImaxNC);
-                            SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
-                        }else if(ppcurr_State == (PPState)1){
-                            push_event(Event::PpImax13A);
-                        }else if(ppcurr_State == (PPState)2){
-                            push_event(Event::PpImax20A);
-                        }else if(ppcurr_State == (PPState)3){
-                            push_event(Event::PpImax32A);
-                        }else if(ppcurr_State == (PPState)4){
-                            push_event(Event::PpImax64A);
-                        }else
-                        {
+            }
+            
+            if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
+                    // TMA : B state get PP Current state
+                    read_pp_state(ppcurr_State);
+                    //DebugP_log("PP STATE A to B : %d  \r\n",ppcurr_State);
+                    if(ppcurr_State == (PPState)0){
+                        push_event(Event::PpImaxNC);
+                        SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
+                    }else if(ppcurr_State == (PPState)1){
+                        push_event(Event::PpImax13A);
+                    }else if(ppcurr_State == (PPState)2){
+                        push_event(Event::PpImax20A);
+                    }else if(ppcurr_State == (PPState)3){
+                        push_event(Event::PpImax32A);
+                    }else if(ppcurr_State == (PPState)4){
+                        push_event(Event::PpImax64A);
+                    }else
+                    {
                             //Do Nothing
-                        }
-                        // TMA  calculation DC = f(Imax)
-                        FsmDcAppy = calcul_dutyCycle(ppcurr_State);
-                        // Flag  = 1 to applied the new DC
-                        FsmDcAppyFlag = 1;
+                    }
+                       // TMA  calculation DC = f(Imax)
+                    FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+                    // Flag  = 1 to applied the new DC
+                    FsmDcAppyFlag = 1;
 
-                }else // SLAC ongoing or OK (1 or 2)
-                {
-                    //5% applied by set_pwm.duty_cycle in main
-                    FsmDcAppyFlag = 2;
-                }
+            }else{ // SLAC ongoing or OK (1 or 2)
+                FsmDcAppyFlag = 2;
             }
 
+            if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
+                set_pwm_on(FsmDcAppy);
+                DebugP_log("main loop, flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+            }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
+                DebugP_log("debug 2, set_pwm_DC_given =  %f (by linux) \r\n",set_pwm_DC_given);
+                set_pwm_on(set_pwm_DC_given);
+                DebugP_log("main loop, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+            }
+            
             if (prev_state == CPState::E || prev_state == CPState::F) {
                 push_event(Event::EF_To_BCD);
             }
@@ -462,7 +470,7 @@ bool FSM::read_pp_state(PPState& state) {
 // OUTPUT : Duty Cycle = [0.05;0.95]%
  **************************************************************** */
 float FSM::calcul_dutyCycle(PPState& state) {
-    float state_DC = 0.0;
+    float state_DC = 1.0;
     if (state == PPState::NOCONNECTED)
     {
         state_DC = 0.05;                 // DC = 5%

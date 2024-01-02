@@ -18,10 +18,14 @@
 /* TMA : Declaration Variable global */
 static constexpr uint32_t CHORE_INTERVAL_MS = 1000;
 
+// JZH : store these as global variables, to be used in main loop
+float set_pwm_DC_given = 0.1; //to not have 0, which will put fsm into error state
 
 void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
     if (in.which_message == HighToLow_set_pwm_tag){
         auto& set_pwm = in.message.set_pwm;
+        
+        
         switch (set_pwm.state) {
         case PWMState_F:
             fsm.set_pwm_f();
@@ -33,12 +37,13 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             break;
         case PWMState_ON:
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
-                fsm.set_pwm_on(FsmDcAppy);
-                DebugP_log(" Case 1, flag = %d, Duty = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
+                //fsm.set_pwm_on(FsmDcAppy);
+                DebugP_log("pwm msg received, Case 1, flag = %d, Duty = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
             
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (in B), or == 2 (in C)
-                fsm.set_pwm_on(set_pwm.duty_cycle);
-                DebugP_log(" Case 2, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm.duty_cycle);
+                set_pwm_DC_given = set_pwm.duty_cycle;
+                DebugP_log("debug 1, set_pwm_DC_given =  %f (by linux) \r\n",set_pwm_DC_given);
+                DebugP_log("pwm msg received, Case 2, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm.duty_cycle);
             }
             break;
         default:
@@ -258,13 +263,10 @@ void main_task(void* args) {
         if (chore_interval_ticks < (current_ts - last_chore_ts)) {
             auto cp_signal = sampler.get_latest_cp_signal();
            DebugP_log("CP: valid: %d , hi : %f  ,low : %f \r\n", cp_signal.valid, cp_signal.high, cp_signal.low);
-            /*DebugP_log("FCAM Debug: hi_trg: %d, low_trg: %d, adcs: %d, sigs: %d, msgs: %d\r\n", ovfls, matchs, adcs, sigs,
-                       messages_received);*/
-// FCAM: PP signal Added
-            auto pp_signal = sampler.get_latest_pp_signal();
-            DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
-            //DebugP_log("PP: hi: %f, PP: dec: %d, valid: 1\r\n", pp_signal.high, pp_signal.high, 1/*pp_signal.valid*/);
 
+// FCAM: PP signal Added
+            //auto pp_signal = sampler.get_latest_pp_signal();
+            //DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
             last_chore_ts = current_ts;
         }
 
