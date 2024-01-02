@@ -32,13 +32,13 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             DebugP_log("MODE PWMState_OFF \r\n");
             break;
         case PWMState_ON:
-            if(FsmDcAppyFlag == 1){
+            if(FsmDcAppyFlag == 1){ //apply PP on CP based on IEC fsm
                 fsm.set_pwm_on(FsmDcAppy);
-                DebugP_log(" Case 1 PwmFlag (linux) %d and  STATE B Duty 5% to = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
+                DebugP_log(" Case 1 %d and  STATE B Duty 5% to = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
                 //DebugP_log("MODE PWM ON: DC = %d , %f\r\n";set_pwm.duty_cycle,set_pwm.duty_cycle);
             }else{
                 fsm.set_pwm_on(set_pwm.duty_cycle);
-                DebugP_log(" Case 1 Pwm 5% (by linux) \r\n");
+                DebugP_log(" Case 2 Pwm 5% (by linux) \r\n");
             }
             break;
         default:
@@ -52,29 +52,34 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
         fsm.enable();
     } else if (in.which_message == HighToLow_disable_tag) {
         fsm.disable();
-    } else if (in.which_message == HighToLow_heartbeat_tag) {
-        DebugP_log("Received a heartbeat from the CPU\r\n");
-    } else if (in.which_message == GetSLAC_state_tag) {
+    } else if (in.which_message == HighToLow_set_slac_tag) {
         DebugP_log("Received a SLAC Status from the CPU\r\n");
-        auto& get_slac = in.message.get_slac;
-        switch (get_slac.state) {
-        case SLACState_PROGRESS :
-            DebugP_log("SLAC STATE = SLACState_PROGRESS \r\n");
-            FsmGetSlacStatus = 1;
-            break;
-        case SLACState_NOK :
-            DebugP_log("SLAC STATE = SLACState_NOK \r\n");
-            FsmGetSlacStatus = 2;
+        auto& set_slac = in.message.set_slac;
+        switch (set_slac.state) {
+        case SLACState_RUN :
+            DebugP_log("SLAC STATE = SLACState_RUN\r\n");
+            FsmSetSlacStatus = 1;
             break;
         case SLACState_OK :
             DebugP_log("SLAC STATE = SLACState_OK \r\n");
-            FsmGetSlacStatus = 3;
+            FsmSetSlacStatus = 2;
+            break;
+        case SLACState_NOK :
+            DebugP_log("SLAC STATE = SLACState_NOK \r\n");
+            FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+            FsmSetSlacStatus = 3;
+            fsm.set_pwm_on(FsmDcAppy);
             break;
         default:
-            // NOT ALLOWED
+            DebugP_log("unknown SLACstate message\r\n");
             break;
         }//END SWITCH
-    } //END_IF_GetSLAC
+    } else if (in.which_message == HighToLow_heartbeat_tag) {
+        DebugP_log("Received a heartbeat from the CPU\r\n");
+    }
+    else {
+        DebugP_log("unknown coming message: %d \r\n",in.which_message);
+    }
 } //END_FUNCTION
 
 // TMA : added debug Log
@@ -162,7 +167,7 @@ void push_event(const iec61851::Event& event, RPMsg& link) {
 }
 
 void main_task(void* args) {
-    DebugP_log("Hello from ti am62x charger firmware Fulup!\r\n");
+    DebugP_log("Hello from ti am62x charger firmware!\r\n");
 
     //
     // initialize necessary classes
@@ -225,8 +230,8 @@ void main_task(void* args) {
     uint32_t last_chore_ts = ClockP_getTicks();
     uint32_t last_heartbeat_ts = ClockP_getTicks();
 
-    const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 50000);
-    const uint32_t heartbeat_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 10000);
+    const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 1000);
+    const uint32_t heartbeat_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 3000);
 
     while (true) {
         // main loop
@@ -258,8 +263,8 @@ void main_task(void* args) {
             /*DebugP_log("FCAM Debug: hi_trg: %d, low_trg: %d, adcs: %d, sigs: %d, msgs: %d\r\n", ovfls, matchs, adcs, sigs,
                        messages_received);*/
 // FCAM: PP signal Added
-            // auto pp_signal = sampler.get_latest_pp_signal();
-            // DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
+            auto pp_signal = sampler.get_latest_pp_signal();
+            DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
             //DebugP_log("PP: hi: %f, PP: dec: %d, valid: 1\r\n", pp_signal.high, pp_signal.high, 1/*pp_signal.valid*/);
 
             last_chore_ts = current_ts;
@@ -272,7 +277,9 @@ void main_task(void* args) {
              .which_message = LowToHigh_heartbeat_tag,
              .message.heartbeat = heartbeat,
            };
-           if (! rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
+           if (rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
+               DebugP_log("Success Send heartbeat \r\n");
+           } else {
                DebugP_log("Fail Send heartbeat \r\n");
            }
         }

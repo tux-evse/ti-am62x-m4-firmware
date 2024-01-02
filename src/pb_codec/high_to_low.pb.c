@@ -12,7 +12,7 @@ PB_BIND(Empty, Empty, AUTO)
 PB_BIND(SetPWM, SetPWM, AUTO)
 
 
-PB_BIND(GetSLAC, GetSLAC, AUTO)
+PB_BIND(SetSLAC, SetSLAC, AUTO)
 
 
 PB_BIND(CpuHeartbeat, CpuHeartbeat, AUTO)

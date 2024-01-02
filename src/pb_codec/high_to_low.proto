@@ -12,8 +12,8 @@ enum PWMState {
 }
 
 enum SLACState {
-	DF = 0;
-    PROGRESS = 1;
+	UDF = 0;
+    RUN = 1;
     OK = 2;
     NOK = 3;
 }
@@ -26,9 +26,8 @@ message SetPWM {
 	float duty_cycle = 2;	
 }
 
-message GetSLAC {
+message SetSLAC {
 	SLACState state = 1; 
-	float timer = 2;
 }
 
 message CpuHeartbeat {
@@ -43,7 +42,7 @@ message HighToLow {
         Empty enable = 3;
         Empty disable = 4;
         CpuHeartbeat heartbeat = 5;
-        GetSLAC get_slac = 6;
+        SetSLAC set_slac = 6;
     }
 }
 

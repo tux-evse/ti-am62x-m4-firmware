@@ -10,7 +10,7 @@
 
 // TMA
 extern uint8_t FsmDcAppyFlag;
-extern uint8_t FsmGetSlacStatus;
+extern uint8_t FsmSetSlacStatus;
 extern float FsmDcAppy;
 //extern float STATE_B_DC;
 //extern float STATE_C_DC;

@@ -11,7 +11,7 @@
  *  ********************************************** */
 // TMA Patch: flag to replace information come from Linux
 uint8_t FsmDcAppyFlag = 0;
-uint8_t FsmGetSlacStatus = 0;
+uint8_t FsmSetSlacStatus = 0;  
 
 // TMA Declaration Var to get DC in function of PP
 float FsmDcAppy = 0;
@@ -160,8 +160,7 @@ void FSM::run() {
                 push_event(Event::CarPluggedIn);
                 simplified_mode = false;
                 //
-               // if (FsmGetSlacStatus == 5 )
-                // {
+               if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
                         // TMA : B state get PP Current state
                         read_pp_state(ppcurr_State);
                         DebugP_log("PP STATE A to B : %d  \r\n",ppcurr_State);
@@ -184,10 +183,12 @@ void FSM::run() {
                         FsmDcAppy = calcul_dutyCycle(ppcurr_State);
                         // Flag  = 1 to applied the new DC
                         FsmDcAppyFlag = 1;
-                        // }else{
-                        // Flag  = 1  5% applied
-                        //FsmDcAppyFlag = 0;
-                //}
+
+                }else // SLAC ongoing or OK (1 or 2)
+                {
+                    //5% applied by set_pwm.duty_cycle in main
+                    FsmDcAppyFlag = 0;
+                }
             }
 
             if (prev_state == CPState::E || prev_state == CPState::F) {
@@ -353,7 +354,7 @@ void FSM::set_pwm_on(float duty_cycle) {
     hal.cp.set_pwm(duty_cycle);
     pwm_duty_cycle = duty_cycle;
     cur_pwm_running = true;
-    DebugP_log("PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
+    DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
 }
 
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only
