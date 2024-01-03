@@ -11,11 +11,13 @@ It only requirer Ti ARM-CGT-CLANG & MCU-PLUS-SDK-AM62X to be recompiled and comp
 of Everest framework.
 
 ## Reference
+
 * Ti-tools AM62x/M4 X-chain: https://software-dl.ti.com/processor-sdk-linux/esd/AM64X/latest/exports/docs/linux/Foundational_Components_IPC64x.html
 * Linux firmware companion: https://github.com/Tux-Evse/ti-am62x-binding-rs.git
 * Pionix original code: https://github.com/PionixPublic/ti-am62x-evse-sdk.git
 
 ## Documentation
+
 * https://elinux.org/Beagleboard:BeagleBoneBlack_Debian#TI_PRU_Code_Generation_Tools
 * https://github.com/MarkAYoder/PRUCookbook/blob/master/docs/03details/details.adoc
 * https://software-dl.ti.com/codegen/docs/tiarmclang/compiler_tools_user_guide/
@@ -29,6 +31,7 @@ of Everest framework.
 * SDK: https://www.ti.com/tool/download/MCU-PLUS-SDK-AM62X/09.00.00.19
 
 ### Check/Install missing dependencies
+
 * ldd ./ti-cgt-armllvm_3.2.0.LTS/bin/tiarmclang
 * zypper/apt install libncurses5
 * Fedora sudo ln -sf /usr/lib64/libncurses.so.? /usr/lib64/libtinfo.so.5
@@ -36,6 +39,7 @@ of Everest framework.
 ## SDK compilation
 
 ### Customize import.mak to match your installation path
+
 ```bash
 cat etc/import.mak
    HOME:=$(HOME)/Workspace/Tux-Evse/Ti
@@ -84,7 +88,8 @@ scp Firmware/am62-mcu-m4f0_0-fw My-Board-IP:/usr/local/firmware
 
 ## config your board
 check uboot on
-```
+
+```bash
 cat /sys/kernel/debug/remoteproc/remoteproc0/trace0
 ```
 
@@ -93,12 +98,14 @@ cat /sys/kernel/debug/remoteproc/remoteproc0/trace0
 !! Warning: following step may depend on your BSP OS configuration
 
 Check firmware is declared within your kernel
-```
+
+```bash
 cat /sys/class/remoteproc/remoteproc0/firmware
 ```
 
 Place your firmware in the configured location
-```
+
+```bash
 scp Firmware/am62-mcu-m4f0_0-fw root@phytec-power:/usr/lib/firmware/
 ssh root@phytec-power reboot
 ```
@@ -113,25 +120,30 @@ picocom -b 115200 /dev/ttyUSB1
 ```
 
 Check debug buffer ring
-```
+
+```bash
 cat /sys/kernel/debug/remoteproc/remoteproc0/trace0
 ```
 
 Check firmware (stop non accepted)
-```
+
+```bash
 cat /sys/class/remoteproc/remoteproc0/firmware
 echo start >/sys/class/remoteproc/remoteproc0/state
 ```
 
 Start ti-am62x binding
-```
+
+```bash
 cynagora-admin set '' 'HELLO' '' '*' yes # give access to devtools via TCP port
 /usr/bin/afb-binder -p 1234 -vvv --config /usr/redpesk/ti-am62x-binding-rs/etc/binding-ti-am62x.json
 ```
+
 Connect with your brower on binding devtool debug interface (make phytec-power host match your config)
 http://phytec-power:1234/devtools
 
 ## WARNING:
+
 * send tiam62x/pwm=off to move CP from -12 to +12
 * send tiam62x/iec6185=true to enable device protobuf firmware event push
 
