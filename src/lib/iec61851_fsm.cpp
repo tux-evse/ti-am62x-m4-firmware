@@ -190,13 +190,13 @@ void FSM::run() {
                 FsmDcAppyFlag = 2;
             }
 
+            // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("main loop, flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+                //DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
-                DebugP_log("debug 2, set_pwm_DC_given =  %f (by linux) \r\n",set_pwm_DC_given);
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("main loop, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
             
             if (prev_state == CPState::E || prev_state == CPState::F) {
@@ -219,7 +219,7 @@ void FSM::run() {
                 push_event(Event::CarRequestedPower);
                 // TMA : B state get PP Current state
                 read_pp_state(ppcurr_State);
-                DebugP_log("PP STATE B to C : %d  \r\n",ppcurr_State);
+                DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
                  if(ppcurr_State == (PPState)0){
                      push_event(Event::PpImaxNC);
                  }else if(ppcurr_State == (PPState)1){
@@ -236,9 +236,8 @@ void FSM::run() {
                  }
                  // TMA  calculation DC = f(Imax)
                  FsmDcAppy = calcul_dutyCycle(ppcurr_State);
-                 //DebugP_log("STATE C Duty cycle : %f  \r\n",FsmDcAppy);
                  FsmDcAppyFlag = 2;
-                 //DebugP_log("STATE C FLAG: %d  \r\n",FsmDcAppyFlag);
+
             }
             if (prev_state == CPState::E || prev_state == CPState::F) {
                 push_event(Event::EF_To_BCD);
@@ -255,21 +254,43 @@ void FSM::run() {
                     // force power off under load
                     power_off();
                 }
-            } else { // C2
-                if (power_on_allowed) {
-                    // Table A.6: Sequence 4 EV ready to charge.
-                    // Must enable power within 3 seconds.
-                    power_on();
+            } 
+            
+            // C2
+            if (power_on_allowed) {
+                // Table A.6: Sequence 4 EV ready to charge.
+                // Must enable power within 3 seconds.
+                DebugP_log("EVSE decides to close relay \r\n");                    
+                power_on();
 
-                    // Simulate Request power Event here for simplified mode
-                    // to ensure that this mode behaves similar for higher
-                    // layers. Note this does not work with 5% mode
-                    // correctly, but simplified mode does not support HLC
-                    // anyway.
-                    if (!prev_pwm_running && simplified_mode)
-                        push_event(Event::CarRequestedPower);
-                }
+                // Simulate Request power Event here for simplified mode
+                // to ensure that this mode behaves similar for higher
+                // layers. Note this does not work with 5% mode
+                // correctly, but simplified mode does not support HLC
+                // anyway.
+                if (!prev_pwm_running && simplified_mode)
+                    push_event(Event::CarRequestedPower);
             }
+
+            // Charging Station decides to stop
+            if (!power_on_allowed){
+                power_off();
+                DebugP_log("EVSE decides to open relay \r\n");
+            }
+
+            // CP PWM application
+            if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
+                set_pwm_on(FsmDcAppy);
+                //DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+            }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
+                set_pwm_on(set_pwm_DC_given);
+                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+            }
+            
+            if (prev_state == CPState::E || prev_state == CPState::F) {
+                push_event(Event::EF_To_BCD);
+            }
+
             break;
 
         case CPState::D:
@@ -362,7 +383,7 @@ void FSM::set_pwm_on(float duty_cycle) {
     hal.cp.set_pwm(duty_cycle);
     pwm_duty_cycle = duty_cycle;
     cur_pwm_running = true;
-    DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
+    //DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
 }
 
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only

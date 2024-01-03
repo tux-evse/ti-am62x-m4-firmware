@@ -19,7 +19,7 @@
 static constexpr uint32_t CHORE_INTERVAL_MS = 1000;
 
 // JZH : store these as global variables, to be used in main loop
-float set_pwm_DC_given = 0.1; //to not have 0, which will put fsm into error state
+float set_pwm_DC_given = 0.05; //to not have 0, which will put fsm into error state
 
 void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
     if (in.which_message == HighToLow_set_pwm_tag){
@@ -42,7 +42,6 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (in B), or == 2 (in C)
                 set_pwm_DC_given = set_pwm.duty_cycle;
-                DebugP_log("debug 1, set_pwm_DC_given =  %f (by linux) \r\n",set_pwm_DC_given);
                 DebugP_log("pwm msg received, Case 2, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm.duty_cycle);
             }
             break;
@@ -53,6 +52,8 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
         }
     } else if (in.which_message == HighToLow_allow_power_on_tag) {
         fsm.allow_power_on(in.message.allow_power_on);
+        int intEnable = static_cast<int>(in.message.allow_power_on);
+        DebugP_log("power_on msg received, enable variable = %d \r\n",intEnable);
     } else if (in.which_message == HighToLow_enable_tag) {
         fsm.enable();
     } else if (in.which_message == HighToLow_disable_tag) {
