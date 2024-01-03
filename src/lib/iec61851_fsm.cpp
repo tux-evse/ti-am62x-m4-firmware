@@ -236,9 +236,8 @@ void FSM::run() {
                  }
                  // TMA  calculation DC = f(Imax)
                  FsmDcAppy = calcul_dutyCycle(ppcurr_State);
-                 FsmDcAppyFlag = 2;
-
             }
+
             if (prev_state == CPState::E || prev_state == CPState::F) {
                 push_event(Event::EF_To_BCD);
             }
@@ -260,7 +259,7 @@ void FSM::run() {
             if (power_on_allowed) {
                 // Table A.6: Sequence 4 EV ready to charge.
                 // Must enable power within 3 seconds.
-                DebugP_log("EVSE decides to close relay \r\n");                    
+                //DebugP_log("EVSE decides to close relay \r\n");                    
                 power_on();
 
                 // Simulate Request power Event here for simplified mode
@@ -275,21 +274,19 @@ void FSM::run() {
             // Charging Station decides to stop
             if (!power_on_allowed){
                 power_off();
-                DebugP_log("EVSE decides to open relay \r\n");
+                //DebugP_log("EVSE decides to open relay \r\n");
             }
 
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
                 set_pwm_on(FsmDcAppy);
-                //DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+                DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
             
-            if (prev_state == CPState::E || prev_state == CPState::F) {
-                push_event(Event::EF_To_BCD);
-            }
+
 
             break;
 
@@ -383,13 +380,13 @@ void FSM::set_pwm_on(float duty_cycle) {
     hal.cp.set_pwm(duty_cycle);
     pwm_duty_cycle = duty_cycle;
     cur_pwm_running = true;
-    //DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
+    DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
 }
 
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only
 void FSM::set_pwm_f() {
     // EVSE error - constant -12V signal on CP
-    hal.cp.set_pwm(0.);
+    hal.cp.set_pwm(0.); 
     pwm_duty_cycle = 0.;
     cur_state = CPState::F;
     cur_pwm_running = false;
