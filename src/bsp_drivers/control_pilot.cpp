@@ -150,7 +150,7 @@ void ControlPilot::set_pwm(float duty_cycle) {
         tclr |= TIMER_TCLR_TRG_OVERFLOW_AND_MATCH;
         CSL_REG32_WR_OFF_RAW(_PWM_TIMER_BASE, TIMER_TMAR_OFFSET, 0xFFFFFFFF - match_ticks + 1);
     }
-    //TMA DebugP_log("IOCTRL tclr: %d , %f  \r\n",tclr,tclr);
+    //DebugP_log("IOCTRL tclr: %d , %f  \r\n",tclr,tclr);
     CSL_REG32_WR_OFF_RAW(_PWM_TIMER_BASE, TIMER_TCLR_OFFSET, tclr);
 }
 

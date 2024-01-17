@@ -11,7 +11,7 @@
  *  ********************************************** */
 // TMA Patch: flag to replace information come from Linux
 uint8_t FsmDcAppyFlag = 0;
-uint8_t FsmSetSlacStatus = 0;
+uint8_t FsmSetSlacStatus = 3;  //JZ 150124 tempo change to have PP usage directly
 extern float set_pwm_DC_given;
 
 // TMA Declaration Var to get DC in function of PP
@@ -28,11 +28,11 @@ uint8_t SlacFlagStatus;
 
 //Defined Declaration :
 /* acquisition in STATE B */
-#define FSM_PP_NC_THRESHOLD  0.45  //TMA : 0.495000  C :
-#define FSM_PP_13A_THRESHOLD 0.36  //TMA : 0.388000  C :
-#define FSM_PP_20A_THRESHOLD 0.30  //TMA : 0.331050  C :
-#define FSM_PP_32A_THRESHOLD 0.22  //TMA : 0.248000  C : 0.223
-#define FSM_PP_63A_THRESHOLD 0.15  //TMA : 0.213000  C :
+#define FSM_PP_NC_THRESHOLD  0.51  //TMA : 0.495000  
+#define FSM_PP_13A_THRESHOLD 0.38  //TMA : 0.388000  
+#define FSM_PP_20A_THRESHOLD 0.3  //TMA : 0.331050  
+#define FSM_PP_32A_THRESHOLD 0.245  //TMA : 0.248000  
+#define FSM_PP_63A_THRESHOLD 0.15  //TMA : 0.213000  
 
 /* **************************************************************************
                       IEC61851 DECLARATION FUNCTIONS
@@ -380,7 +380,7 @@ void FSM::set_pwm_on(float duty_cycle) {
     hal.cp.set_pwm(duty_cycle);
     pwm_duty_cycle = duty_cycle;
     cur_pwm_running = true;
-    DebugP_log("apply PWM DC: %d , %f \r\n",pwm_duty_cycle,pwm_duty_cycle);
+    DebugP_log("apply PWM DC: %f \r\n",pwm_duty_cycle);
 }
 
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only

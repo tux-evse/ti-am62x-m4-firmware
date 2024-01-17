@@ -266,8 +266,8 @@ void main_task(void* args) {
            DebugP_log("CP: valid: %d , hi : %f  ,low : %f \r\n", cp_signal.valid, cp_signal.high, cp_signal.low);
 
 // FCAM: PP signal Added
-            //auto pp_signal = sampler.get_latest_pp_signal();
-            //DebugP_log("PP: valid: %d , hi : %f  ,low : %f \r\n", pp_signal.valid ,  pp_signal.high ,  pp_signal.low );
+            auto pp_signal = sampler.get_latest_pp_signal();
+            DebugP_log("PP: valid: %d , hi : %f  \r\n", pp_signal.valid ,  pp_signal.high);
             last_chore_ts = current_ts;
         }
 
