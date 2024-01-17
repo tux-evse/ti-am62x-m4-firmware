@@ -16,6 +16,7 @@ extern float set_pwm_DC_given;
 
 // TMA Declaration Var to get DC in function of PP
 float FsmDcAppy = 0;
+float FsmDcPP = 0;
 //float STATE_B_DC;
 //float STATE_C_DC;
 uint8_t locSlacStatus = 4; //SLACState
@@ -185,7 +186,7 @@ void FSM::run() {
                             //Do Nothing
                         }
                        // TMA  calculation DC = f(Imax)
-                        FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+                        FsmDcPP = calcul_dutyCycle(ppcurr_State);
                         // Flag  = 1 to applied the new DC
                         FsmDcAppyFlag = 1;
                     }
@@ -196,17 +197,19 @@ void FSM::run() {
 
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
-
-                if(set_pwm_DC_given< FsmDcAppy){
-                    set_pwm_on(set_pwm_DC_given);
+                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
+                    FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
+                    //DebugP_log("replace FsmDcAppy by linux cmd\r\n");
                 }else{
-                    set_pwm_on(FsmDcAppy);
+                    FsmDcAppy = FsmDcPP;
+                    //DebugP_log("use FsmDcAppy original \r\n");
                 }
-                
-                 DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+
+                set_pwm_on(FsmDcAppy);
+                DebugP_log("flag = %d, Duty = %f by PP & linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
             
             
@@ -291,13 +294,20 @@ void FSM::run() {
 
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
+                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
+                    FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
+                    DebugP_log("replace FsmDcAppy by linux cmd\r\n");
+                }else{
+                    FsmDcAppy = FsmDcPP;
+                    DebugP_log("use FsmDcAppy original \r\n");
+                }
+
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+                DebugP_log("flag = %d, Duty = %f by PP & linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
-            
 
 
             break;
@@ -392,7 +402,7 @@ void FSM::set_pwm_on(float duty_cycle) {
     hal.cp.set_pwm(duty_cycle);
     pwm_duty_cycle = duty_cycle;
     cur_pwm_running = true;
-    DebugP_log("apply PWM DC: %f \r\n",pwm_duty_cycle);
+    //DebugP_log("apply PWM DC: %f \r\n",pwm_duty_cycle);
 }
 
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only

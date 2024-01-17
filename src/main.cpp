@@ -38,6 +38,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
         case PWMState_ON:
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
                 //fsm.set_pwm_on(FsmDcAppy);
+                set_pwm_DC_given = set_pwm.duty_cycle;
                 DebugP_log("pwm msg received, Case 1, flag = %d, Duty = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
             
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (in B), or == 2 (in C)

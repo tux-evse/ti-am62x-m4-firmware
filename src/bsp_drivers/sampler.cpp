@@ -247,7 +247,7 @@ void Sampler::loop() {
         } else {
             raw_pp_signal.valid = false;
         }
-        DebugP_log("PP valid Raw value high: %f \r\n", raw_pp_signal.high); // JZH
+        //DebugP_log("PP valid Raw value high: %f \r\n", raw_pp_signal.high); // JZH
 
         xSemaphoreGive(raw_pp_signal_mutex);
 /**/
