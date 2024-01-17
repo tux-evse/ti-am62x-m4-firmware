@@ -11,7 +11,7 @@
  *  ********************************************** */
 // TMA Patch: flag to replace information come from Linux
 uint8_t FsmDcAppyFlag = 0;
-uint8_t FsmSetSlacStatus = 0;
+uint8_t FsmSetSlacStatus = 0; // set 5% by default  
 extern float set_pwm_DC_given;
 
 // TMA Declaration Var to get DC in function of PP
