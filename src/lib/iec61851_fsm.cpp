@@ -23,15 +23,16 @@ uint8_t locSlacStatus = 4; //SLACState
 namespace iec61851 {
 //Global Variable :
 PPState ppcurr_State;
+PPState memo_ppcurr_State = (PPState)0;  // to check if pp state changes
 uint8_t SlacFlagStatus;
 
 
 //Defined Declaration :
 /* acquisition in STATE B */
-#define FSM_PP_NC_THRESHOLD  0.51  //TMA : 0.495000  
-#define FSM_PP_13A_THRESHOLD 0.38  //TMA : 0.388000  
-#define FSM_PP_20A_THRESHOLD 0.3  //TMA : 0.331050  
-#define FSM_PP_32A_THRESHOLD 0.245  //TMA : 0.248000  
+#define FSM_PP_NC_THRESHOLD  0.5  //TMA : 0.495000  
+#define FSM_PP_13A_THRESHOLD 0.36  //TMA : 0.388000  
+#define FSM_PP_20A_THRESHOLD 0.28  //TMA : 0.331050  
+#define FSM_PP_32A_THRESHOLD 0.23  //TMA : 0.248000  
 #define FSM_PP_63A_THRESHOLD 0.15  //TMA : 0.213000  
 
 /* **************************************************************************
@@ -165,26 +166,29 @@ void FSM::run() {
             if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
                     // TMA : B state get PP Current state
                     read_pp_state(ppcurr_State);
-                    //DebugP_log("PP STATE A to B : %d  \r\n",ppcurr_State);
-                    if(ppcurr_State == (PPState)0){
-                        push_event(Event::PpImaxNC);
-                        SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
-                    }else if(ppcurr_State == (PPState)1){
-                        push_event(Event::PpImax13A);
-                    }else if(ppcurr_State == (PPState)2){
-                        push_event(Event::PpImax20A);
-                    }else if(ppcurr_State == (PPState)3){
-                        push_event(Event::PpImax32A);
-                    }else if(ppcurr_State == (PPState)4){
-                        push_event(Event::PpImax64A);
-                    }else
-                    {
+
+                    if (memo_ppcurr_State != ppcurr_State){
+                    memo_ppcurr_State = ppcurr_State;
+                        if(ppcurr_State == (PPState)0){
+                            push_event(Event::PpImaxNC);
+                            SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
+                        }else if(ppcurr_State == (PPState)1){
+                            push_event(Event::PpImax13A);
+                        }else if(ppcurr_State == (PPState)2){
+                            push_event(Event::PpImax20A);
+                        }else if(ppcurr_State == (PPState)3){
+                            push_event(Event::PpImax32A);
+                        }else if(ppcurr_State == (PPState)4){
+                            push_event(Event::PpImax64A);
+                        }else
+                        {
                             //Do Nothing
-                    }
+                        }
                        // TMA  calculation DC = f(Imax)
-                    FsmDcAppy = calcul_dutyCycle(ppcurr_State);
-                    // Flag  = 1 to applied the new DC
-                    FsmDcAppyFlag = 1;
+                        FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+                        // Flag  = 1 to applied the new DC
+                        FsmDcAppyFlag = 1;
+                    }
 
             }else{ // SLAC ongoing or OK (1 or 2)
                 FsmDcAppyFlag = 2;
@@ -224,25 +228,25 @@ void FSM::run() {
             }
             if (prev_state == CPState::B) {
                 push_event(Event::CarRequestedPower);
-                // TMA : B state get PP Current state
-                read_pp_state(ppcurr_State);
-                DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
-                 if(ppcurr_State == (PPState)0){
-                     push_event(Event::PpImaxNC);
-                 }else if(ppcurr_State == (PPState)1){
-                     push_event(Event::PpImax13A);
-                 }else if(ppcurr_State == (PPState)2){
-                     push_event(Event::PpImax20A);
-                 }else if(ppcurr_State == (PPState)3){
-                     push_event(Event::PpImax32A);
-                 }else if(ppcurr_State == (PPState)4){
-                     push_event(Event::PpImax64A);
-                 }else
-                 {
-                     // Do Nothing
-                 }
+                // TJZH 17012024: stop to get PP Current state in C state
+                // read_pp_state(ppcurr_State);
+                // DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
+                //  if(ppcurr_State == (PPState)0){
+                //      push_event(Event::PpImaxNC);
+                //  }else if(ppcurr_State == (PPState)1){
+                //      push_event(Event::PpImax13A);
+                //  }else if(ppcurr_State == (PPState)2){
+                //      push_event(Event::PpImax20A);
+                //  }else if(ppcurr_State == (PPState)3){
+                //      push_event(Event::PpImax32A);
+                //  }else if(ppcurr_State == (PPState)4){
+                //      push_event(Event::PpImax64A);
+                //  }else
+                //  {
+                //      // Do Nothing
+                //  }
                  // TMA  calculation DC = f(Imax)
-                 FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+                 //FsmDcAppy = calcul_dutyCycle(ppcurr_State);
             }
 
             if (prev_state == CPState::E || prev_state == CPState::F) {
@@ -287,17 +291,11 @@ void FSM::run() {
 
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
-
-                if(set_pwm_DC_given< FsmDcAppy){
-                    set_pwm_on(set_pwm_DC_given);
-                }else{
-                    set_pwm_on(FsmDcAppy);
-                }
-                
-                 DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+                set_pwm_on(FsmDcAppy);
+                DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
             
 
