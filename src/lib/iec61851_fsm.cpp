@@ -192,12 +192,19 @@ void FSM::run() {
 
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
-                set_pwm_on(FsmDcAppy);
-                //DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+
+                if(set_pwm_DC_given< FsmDcAppy){
+                    set_pwm_on(set_pwm_DC_given);
+                }else{
+                    set_pwm_on(FsmDcAppy);
+                }
+                
+                 DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
+            
             
             if (prev_state == CPState::E || prev_state == CPState::F) {
                 push_event(Event::EF_To_BCD);
@@ -277,13 +284,20 @@ void FSM::run() {
                 //DebugP_log("EVSE decides to open relay \r\n");
             }
 
+
             // CP PWM application
             if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
-                set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
+
+                if(set_pwm_DC_given< FsmDcAppy){
+                    set_pwm_on(set_pwm_DC_given);
+                }else{
+                    set_pwm_on(FsmDcAppy);
+                }
+                
+                 DebugP_log("flag = %d, Duty = %f by PP \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
             
 
