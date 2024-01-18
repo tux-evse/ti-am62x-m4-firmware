@@ -11,7 +11,7 @@
  *  ********************************************** */
 // TMA Patch: flag to replace information come from Linux
 uint8_t FsmDcAppyFlag = 0;
-uint8_t FsmSetSlacStatus = 0; // set 5% by default  
+uint8_t FsmSetSlacStatus = 0; // set 5% by default
 extern float set_pwm_DC_given;
 
 // TMA Declaration Var to get DC in function of PP
@@ -30,11 +30,11 @@ uint8_t SlacFlagStatus;
 
 //Defined Declaration :
 /* acquisition in STATE B */
-#define FSM_PP_NC_THRESHOLD  0.5  //TMA : 0.495000  
-#define FSM_PP_13A_THRESHOLD 0.36  //TMA : 0.388000  
-#define FSM_PP_20A_THRESHOLD 0.28  //TMA : 0.331050  
-#define FSM_PP_32A_THRESHOLD 0.23  //TMA : 0.248000  
-#define FSM_PP_63A_THRESHOLD 0.15  //TMA : 0.213000  
+#define FSM_PP_NC_THRESHOLD  0.5  //TMA : 0.495000
+#define FSM_PP_13A_THRESHOLD 0.36  //TMA : 0.388000
+#define FSM_PP_20A_THRESHOLD 0.28  //TMA : 0.331050
+#define FSM_PP_32A_THRESHOLD 0.23  //TMA : 0.248000
+#define FSM_PP_63A_THRESHOLD 0.15  //TMA : 0.213000
 
 /* **************************************************************************
                       IEC61851 DECLARATION FUNCTIONS
@@ -163,7 +163,7 @@ void FSM::run() {
                 push_event(Event::CarPluggedIn);
                 simplified_mode = false;
             }
-            
+
             if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
                     // TMA : B state get PP Current state
                     read_pp_state(ppcurr_State);
@@ -211,8 +211,8 @@ void FSM::run() {
                 set_pwm_on(set_pwm_DC_given);
                 DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
-            
-            
+
+
             if (prev_state == CPState::E || prev_state == CPState::F) {
                 push_event(Event::EF_To_BCD);
             }
@@ -230,26 +230,27 @@ void FSM::run() {
                 simplified_mode = true;
             }
             if (prev_state == CPState::B) {
-                push_event(Event::CarRequestedPower);
                 // TJZH 17012024: stop to get PP Current state in C state
-                // read_pp_state(ppcurr_State);
+                read_pp_state(ppcurr_State);
                 // DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
-                //  if(ppcurr_State == (PPState)0){
-                //      push_event(Event::PpImaxNC);
-                //  }else if(ppcurr_State == (PPState)1){
-                //      push_event(Event::PpImax13A);
-                //  }else if(ppcurr_State == (PPState)2){
-                //      push_event(Event::PpImax20A);
-                //  }else if(ppcurr_State == (PPState)3){
-                //      push_event(Event::PpImax32A);
-                //  }else if(ppcurr_State == (PPState)4){
-                //      push_event(Event::PpImax64A);
-                //  }else
-                //  {
+                if(ppcurr_State == (PPState)0){
+                      push_event(Event::PpImaxNC);
+                  }else if(ppcurr_State == (PPState)1){
+                      push_event(Event::PpImax13A);
+                  }else if(ppcurr_State == (PPState)2){
+                      push_event(Event::PpImax20A);
+                  }else if(ppcurr_State == (PPState)3){
+                      push_event(Event::PpImax32A);
+                  }else if(ppcurr_State == (PPState)4){
+                      push_event(Event::PpImax64A);
+                  };
+                //
+                //  else {
                 //      // Do Nothing
                 //  }
                  // TMA  calculation DC = f(Imax)
                  //FsmDcAppy = calcul_dutyCycle(ppcurr_State);
+                push_event(Event::CarRequestedPower);
             }
 
             if (prev_state == CPState::E || prev_state == CPState::F) {
@@ -267,13 +268,13 @@ void FSM::run() {
                     // force power off under load
                     power_off();
                 }
-            } 
-            
+            }
+
             // C2
             if (power_on_allowed) {
                 // Table A.6: Sequence 4 EV ready to charge.
                 // Must enable power within 3 seconds.
-                //DebugP_log("EVSE decides to close relay \r\n");                    
+                //DebugP_log("EVSE decides to close relay \r\n");
                 power_on();
 
                 // Simulate Request power Event here for simplified mode
@@ -408,7 +409,7 @@ void FSM::set_pwm_on(float duty_cycle) {
 // NOTE: F can be exited by set_pwm_off or set_pwm_on only
 void FSM::set_pwm_f() {
     // EVSE error - constant -12V signal on CP
-    hal.cp.set_pwm(0.); 
+    hal.cp.set_pwm(0.);
     pwm_duty_cycle = 0.;
     cur_state = CPState::F;
     cur_pwm_running = false;
