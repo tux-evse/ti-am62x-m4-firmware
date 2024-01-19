@@ -206,10 +206,10 @@ void FSM::run() {
                 }
 
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP & linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
+                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
 
 
@@ -224,6 +224,8 @@ void FSM::run() {
             break;
 
         case CPState::C:
+            DebugP_log("STATE C, previous: %d current : %d  \r\n",prev_state, ppcurr_State);
+
             // Table A.6: Sequence 1.2 Plug-in
             if (prev_state == CPState::A) {
                 push_event(Event::CarPluggedIn);
@@ -232,7 +234,7 @@ void FSM::run() {
             if (prev_state == CPState::B) {
                 // TJZH 17012024: stop to get PP Current state in C state
                 read_pp_state(ppcurr_State);
-                // DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
+                DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
                 if(ppcurr_State == (PPState)0){
                       push_event(Event::PpImaxNC);
                   }else if(ppcurr_State == (PPState)1){
@@ -307,7 +309,7 @@ void FSM::run() {
                 DebugP_log("flag = %d, Duty = %f by PP & linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
             }
 
 

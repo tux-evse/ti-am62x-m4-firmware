@@ -24,8 +24,8 @@ float set_pwm_DC_given = 0.05; //to not have 0, which will put fsm into error st
 void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
     if (in.which_message == HighToLow_set_pwm_tag){
         auto& set_pwm = in.message.set_pwm;
-        
-        
+
+
         switch (set_pwm.state) {
         case PWMState_F:
             fsm.set_pwm_f();
@@ -40,7 +40,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
                 //fsm.set_pwm_on(FsmDcAppy);
                 set_pwm_DC_given = set_pwm.duty_cycle;
                 DebugP_log("pwm msg received, Case 1, flag = %d, Duty = %f \r\n", FsmDcAppyFlag, FsmDcAppy);
-            
+
             }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (in B), or == 2 (in C)
                 set_pwm_DC_given = set_pwm.duty_cycle;
                 DebugP_log("pwm msg received, Case 2, flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm.duty_cycle);
@@ -74,6 +74,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
         case SLACState_NOK :
             DebugP_log("SLAC STATE = SLACState_NOK \r\n");
             FsmSetSlacStatus = 3;
+              fsm.set_pwm_off();
             break;
         default:
             DebugP_log("unknown SLACstate message\r\n");
@@ -232,10 +233,10 @@ void main_task(void* args) {
                               SAMPLING_TASK_PRIORITY, &sampling_task_handle);
     DebugP_assert(status == pdPASS);
 
-    uint32_t last_chore_ts = ClockP_getTicks();
+    //uint32_t last_chore_ts = ClockP_getTicks();
     uint32_t last_heartbeat_ts = ClockP_getTicks();
 
-    const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 1000);
+    //const uint32_t chore_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 1000);
     const uint32_t heartbeat_interval_ticks = ClockP_usecToTicks(CHORE_INTERVAL_MS * 3000);
 
     while (true) {
@@ -262,15 +263,14 @@ void main_task(void* args) {
 
         // 4. do chore
         uint32_t current_ts = ClockP_getTicks();
-        if (chore_interval_ticks < (current_ts - last_chore_ts)) {
-            auto cp_signal = sampler.get_latest_cp_signal();
-           DebugP_log("CP: valid: %d , hi : %f  ,low : %f \r\n", cp_signal.valid, cp_signal.high, cp_signal.low);
+        // if (chore_interval_ticks < (current_ts - last_chore_ts)) {
+        //     auto cp_signal = sampler.get_latest_cp_signal();
+        //    DebugP_log("CP: valid: %d , hi : %f  ,low : %f \r\n", cp_signal.valid, cp_signal.high, cp_signal.low);
 
-// FCAM: PP signal Added
-            auto pp_signal = sampler.get_latest_pp_signal();
-            DebugP_log("PP: valid: %d , hi : %f  \r\n", pp_signal.valid ,  pp_signal.high);
-            last_chore_ts = current_ts;
-        }
+        //     auto pp_signal = sampler.get_latest_pp_signal();
+        //     DebugP_log("PP: valid: %d , hi : %f  \r\n", pp_signal.valid ,  pp_signal.high);
+        //     last_chore_ts = current_ts;
+        // }
 
         if (heartbeat_interval_ticks < (current_ts - last_heartbeat_ts)) {
            last_heartbeat_ts = current_ts;
@@ -279,9 +279,7 @@ void main_task(void* args) {
              .which_message = LowToHigh_heartbeat_tag,
              .message.heartbeat = heartbeat,
            };
-           if (rpmsg_link.send_msg(out /* Fulup timeout ???? */)) {
-               DebugP_log("Success Send heartbeat \r\n");
-           } else {
+           if (! rpmsg_link.send_msg(out)) {
                DebugP_log("Fail Send heartbeat \r\n");
            }
         }
