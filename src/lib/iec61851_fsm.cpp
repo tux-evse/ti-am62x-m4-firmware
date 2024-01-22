@@ -136,7 +136,7 @@ void FSM::run() {
 
                 //reset memo of PP & SLAC status
                 memo_ppcurr_State = (PPState)0;
-
+                FsmSetSlacStatus = 1;
 
                 // If car was unplugged, reset RCD flag.
                 if (rcd_reclosing_allowed) {
@@ -187,7 +187,7 @@ void FSM::run() {
                 }
             }
 
-            // CP PWM application
+            // CP application permanent during B
             if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
                 FsmDcPP = calcul_dutyCycle(ppcurr_State);
                 // apply the min of PP max & linux max command
@@ -197,10 +197,10 @@ void FSM::run() {
                     FsmDcAppy = FsmDcPP;
                 }
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
+                DebugP_log("SlacStatus = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
             }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
+                DebugP_log("SlacStatus = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
             break;
 
@@ -282,7 +282,7 @@ void FSM::run() {
                 //DebugP_log("EVSE decides to open relay \r\n");
             }
 
-            // CP PWM application
+            // CP application permanent during B
             if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
                 FsmDcPP = calcul_dutyCycle(ppcurr_State);
                 // apply the min of PP max & linux max command
@@ -292,10 +292,10 @@ void FSM::run() {
                     FsmDcAppy = FsmDcPP;
                 }
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
+                DebugP_log("SlacStatus = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
             }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
+                DebugP_log("SlacStatus = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
             break;
 
