@@ -74,7 +74,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
         case SLACState_NOK :
             DebugP_log("SLAC STATE = SLACState_NOK \r\n");
             FsmSetSlacStatus = 3;
-              fsm.set_pwm_off();
+            //fsm.set_pwm_off();
             break;
         default:
             DebugP_log("unknown SLACstate message\r\n");
