@@ -190,22 +190,19 @@ void FSM::run() {
             // CP PWM application
             if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
                 FsmDcPP = calcul_dutyCycle(ppcurr_State);
-                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
-                    FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
-
+                // apply the min of PP max & linux max command
+                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){ //ignore 5% as corner case
+                    FsmDcAppy = set_pwm_DC_given;
                 }else{
                     FsmDcAppy = FsmDcPP;
                 }
-
                 set_pwm_on(FsmDcAppy);
                 DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
             }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
                 DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
-
-
-
+            break;
 
             if (!cur_pwm_running) { // B1
             } else {                // B2
@@ -288,20 +285,18 @@ void FSM::run() {
             // CP PWM application
             if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
                 FsmDcPP = calcul_dutyCycle(ppcurr_State);
-                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
-                    FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
-
+                // apply the min of PP max & linux max command
+                if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){ //ignore 5% as corner case
+                    FsmDcAppy = set_pwm_DC_given;
                 }else{
                     FsmDcAppy = FsmDcPP;
                 }
-
                 set_pwm_on(FsmDcAppy);
                 DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
             }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
                 DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
-
             break;
 
         case CPState::D:
