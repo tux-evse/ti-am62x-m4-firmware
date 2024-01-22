@@ -135,6 +135,10 @@ void FSM::run() {
                 power_off();
                 push_event(Event::CarUnplugged);
 
+                //reset memo of PP & SLAC status
+                memo_ppcurr_State = (PPState)0;
+
+
                 // If car was unplugged, reset RCD flag.
                 if (rcd_reclosing_allowed) {
                     hal.power_switch.reset_emergency_switch();
@@ -161,36 +165,32 @@ void FSM::run() {
             // Table A.6: Sequence 1.1 Plug-in
             if (prev_state == CPState::A || prev_state == CPState::Disabled) {
                 push_event(Event::CarPluggedIn);
+                // read pp current only once when A => B
+                read_pp_state(ppcurr_State);
+                if (memo_ppcurr_State != ppcurr_State){
+                    memo_ppcurr_State = ppcurr_State;
+                    if(ppcurr_State == (PPState)0){
+                        push_event(Event::PpImaxNC);
+                        //SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
+                    }else if(ppcurr_State == (PPState)1){
+                        push_event(Event::PpImax13A);
+                    }else if(ppcurr_State == (PPState)2){
+                        push_event(Event::PpImax20A);
+                    }else if(ppcurr_State == (PPState)3){
+                        push_event(Event::PpImax32A);
+                    }else if(ppcurr_State == (PPState)4){
+                        push_event(Event::PpImax64A);
+                    }else
+                    {
+                        //Do Nothing
+                    }
                 simplified_mode = false;
             }
 
             if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
-                    // TMA : B state get PP Current state
-                    read_pp_state(ppcurr_State);
-
-                    if (memo_ppcurr_State != ppcurr_State){
-                    memo_ppcurr_State = ppcurr_State;
-                        if(ppcurr_State == (PPState)0){
-                            push_event(Event::PpImaxNC);
-                            SlacFlagStatus = 0; // Set 5% of duty cycle (default value)
-                        }else if(ppcurr_State == (PPState)1){
-                            push_event(Event::PpImax13A);
-                        }else if(ppcurr_State == (PPState)2){
-                            push_event(Event::PpImax20A);
-                        }else if(ppcurr_State == (PPState)3){
-                            push_event(Event::PpImax32A);
-                        }else if(ppcurr_State == (PPState)4){
-                            push_event(Event::PpImax64A);
-                        }else
-                        {
-                            //Do Nothing
-                        }
-                       // TMA  calculation DC = f(Imax)
                         FsmDcPP = calcul_dutyCycle(ppcurr_State);
-                        // Flag  = 1 to applied the new DC
                         FsmDcAppyFlag = 1;
                     }
-
             }else{ // SLAC ongoing or OK (1 or 2)
                 FsmDcAppyFlag = 2;
             }
@@ -232,27 +232,28 @@ void FSM::run() {
                 simplified_mode = true;
             }
             if (prev_state == CPState::B) {
-                // TJZH 17012024: stop to get PP Current state in C state
-                read_pp_state(ppcurr_State);
-                DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
-                if(ppcurr_State == (PPState)0){
-                      push_event(Event::PpImaxNC);
-                  }else if(ppcurr_State == (PPState)1){
-                      push_event(Event::PpImax13A);
-                  }else if(ppcurr_State == (PPState)2){
-                      push_event(Event::PpImax20A);
-                  }else if(ppcurr_State == (PPState)3){
-                      push_event(Event::PpImax32A);
-                  }else if(ppcurr_State == (PPState)4){
-                      push_event(Event::PpImax64A);
-                  };
-                //
-                //  else {
-                //      // Do Nothing
-                //  }
-                 // TMA  calculation DC = f(Imax)
-                 //FsmDcAppy = calcul_dutyCycle(ppcurr_State);
                 push_event(Event::CarRequestedPower);
+                // JZH 17012024: stop to get PP Current state in C state
+
+                // read_pp_state(ppcurr_State);
+                // DebugP_log("STATE B to C, PPState : %d  \r\n",ppcurr_State);
+                // if(ppcurr_State == (PPState)0){
+                //       push_event(Event::PpImaxNC);
+                //   }else if(ppcurr_State == (PPState)1){
+                //       push_event(Event::PpImax13A);
+                //   }else if(ppcurr_State == (PPState)2){
+                //       push_event(Event::PpImax20A);
+                //   }else if(ppcurr_State == (PPState)3){
+                //       push_event(Event::PpImax32A);
+                //   }else if(ppcurr_State == (PPState)4){
+                //       push_event(Event::PpImax64A);
+                //   };
+                // //
+                // //  else {
+                // //      // Do Nothing
+                // //  }
+                //  // TMA  calculation DC = f(Imax)
+                //  //FsmDcAppy = calcul_dutyCycle(ppcurr_State);
             }
 
             if (prev_state == CPState::E || prev_state == CPState::F) {
