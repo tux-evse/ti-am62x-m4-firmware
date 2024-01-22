@@ -9,8 +9,7 @@
 /* TMA *******************************************
  *  ******** declaration global variables ********
  *  ********************************************** */
-// TMA Patch: flag to replace information come from Linux
-uint8_t FsmDcAppyFlag = 0;
+
 uint8_t FsmSetSlacStatus = 0; // set 5% by default
 extern float set_pwm_DC_given;
 
@@ -185,37 +184,28 @@ void FSM::run() {
                         //Do Nothing
                     }
                 simplified_mode = false;
-            }
-
-            if (FsmSetSlacStatus == 3 ){// SLAC NOK, timeout so apply PP on CP
-                        FsmDcPP = calcul_dutyCycle(ppcurr_State);
-                        FsmDcAppyFlag = 1;
-                    }
-            }else{ // SLAC ongoing or OK (1 or 2)
-                FsmDcAppyFlag = 2;
+                }
             }
 
             // CP PWM application
-            if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
+            if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
+                FsmDcPP = calcul_dutyCycle(ppcurr_State);
                 if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
                     FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
-                    //DebugP_log("replace FsmDcAppy by linux cmd\r\n");
+
                 }else{
                     FsmDcAppy = FsmDcPP;
-                    //DebugP_log("use FsmDcAppy original \r\n");
                 }
 
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
-            }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
+                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
+            }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
-                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
 
 
-            if (prev_state == CPState::E || prev_state == CPState::F) {
-                push_event(Event::EF_To_BCD);
-            }
+
 
             if (!cur_pwm_running) { // B1
             } else {                // B2
@@ -295,24 +285,22 @@ void FSM::run() {
                 //DebugP_log("EVSE decides to open relay \r\n");
             }
 
-
             // CP PWM application
-            if(FsmDcAppyFlag == 1){ //apply PWM duty cycle  based on PP
+            if(FsmSetSlacStatus == 3){ //SLAC NOK, apply PWM duty cycle  based on PP
+                FsmDcPP = calcul_dutyCycle(ppcurr_State);
                 if((set_pwm_DC_given< FsmDcPP) && (set_pwm_DC_given>0.06)){
                     FsmDcAppy = set_pwm_DC_given; // use linux pwm dc if it's lower than PP calculated one, ignore 5% as corner case
-                    DebugP_log("replace FsmDcAppy by linux cmd\r\n");
+
                 }else{
                     FsmDcAppy = FsmDcPP;
-                    DebugP_log("use FsmDcAppy original \r\n");
                 }
 
                 set_pwm_on(FsmDcAppy);
-                DebugP_log("flag = %d, Duty = %f by PP & linux cmd min \r\n", FsmDcAppyFlag, FsmDcAppy);
-            }else{ // apply DC given by linux, FsmDcAppyFlag == 0 (default), or == 2 (apply given DC)
+                DebugP_log("flag = %d, Duty = %f by PP & Linux cmd min \r\n", FsmSetSlacStatus, FsmDcAppy);
+            }else{ // SLAC OK, apply DC given by linux
                 set_pwm_on(set_pwm_DC_given);
-                //DebugP_log("flag = %d, duty = %f (by linux) \r\n", FsmDcAppyFlag, set_pwm_DC_given);
+                DebugP_log("flag = %d, duty = %f (by Linux) \r\n", FsmSetSlacStatus, set_pwm_DC_given);
             }
-
 
             break;
 
