@@ -40,7 +40,7 @@ uint8_t SlacFlagStatus;
 **************************************************************************** */
 // checks if voltage is within center+-interval
 static bool is_voltage_in_range(float voltage, float center) {
-    const float interval = 1.1;
+    const float interval = 1.5; // Fulup TBD Change from 1.1 to 1.5 to suppoer eGolf-v7
 
     return ((voltage > center - interval) && (voltage < center + interval));
 }

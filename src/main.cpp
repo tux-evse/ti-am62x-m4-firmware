@@ -37,7 +37,7 @@ void handle_incoming_message(const HighToLow& in, iec61851::FSM& fsm) {
             break;
         case PWMState_ON:
             set_pwm_DC_given = set_pwm.duty_cycle;
-            DebugP_log("pwm msg received, Duty = %f \r\n", FsmDcAppy);
+            DebugP_log("pwm msg received, Duty old= %f new: %f\r\n", FsmDcAppy, set_pwm_DC_given);
             break;
         default:
             // NOT ALLOWED
