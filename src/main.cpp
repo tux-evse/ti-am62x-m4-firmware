@@ -15,6 +15,8 @@
 #include "bsp_drivers/power_switch.hpp"
 #include "bsp_drivers/rcd.hpp"
 
+#include "version.h"
+
 /* TMA : Declaration Variable global */
 static constexpr uint32_t CHORE_INTERVAL_MS = 1000;
 
@@ -166,6 +168,7 @@ void push_event(const iec61851::Event& event, RPMsg& link) {
 }
 
 void main_task(void* args) {
+    DebugP_log(VERSION "\r\n");
     DebugP_log("Hello from ti am62x charger firmware!\r\n");
 
     //

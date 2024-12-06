@@ -179,6 +179,8 @@ vpath %.S $(FILES_PATH)
 vpath %.lib $(LIBS_PATH_NAME)
 vpath %.a $(LIBS_PATH_NAME)
 
+$(OBJDIR)/main.obj main.obj: main.cpp version.h
+
 $(OBJDIR)/%.obj %.obj: %.c
 	@echo  Compiling: am62x:m4fss0-0:freertos:ti-arm-clang $(OUTNAME): $<
 	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -MMD -o $(OBJDIR)/$@ $<
@@ -191,7 +193,12 @@ $(OBJDIR)/%.obj %.obj: %.S
 	@echo  Compiling: am62x:m4fss0-0:freertos:ti-arm-clang $(LIBNAME): $<
 	$(CC) -c $(CFLAGS) -o $(OBJDIR)/$@ $<
 
-all: $(TARGETS)
+FORCE:
+
+version.h: FORCE version.h.in
+	@sed "s/<GIT_COMMIT>/`git rev-parse --short HEAD`/" version.h.in > version.h
+
+all: $(TARGETS) version.h
 
 SYSCFG_GEN_FILES=generated/ti_drivers_config.c generated/ti_drivers_config.h
 SYSCFG_GEN_FILES+=generated/ti_drivers_open_close.c generated/ti_drivers_open_close.h
@@ -211,6 +218,7 @@ $(OUTNAME): syscfg $(SYSCFG_GEN_FILES) $(OBJS) $(LNK_FILES) $(LIBS_NAME)
 	@echo  .
 
 clean: scrub
+	@rm -f version.h
 	@echo  Cleaning: am62x:m4fss0-0:freertos:ti-arm-clang $(OUTNAME) ...
 	$(RMDIR) $(OBJDIR)
 	$(RM) $(DESTDIR)/$(OUTNAME)

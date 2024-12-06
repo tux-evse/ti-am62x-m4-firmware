@@ -7,3 +7,4 @@ generated/
 *_xip
 *_fs
 *.appimage
+src/version.h
