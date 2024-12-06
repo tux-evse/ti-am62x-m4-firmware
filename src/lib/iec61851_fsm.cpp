@@ -164,6 +164,10 @@ void FSM::run() {
             // Table A.6: Sequence 1.1 Plug-in
             if (prev_state == CPState::A || prev_state == CPState::Disabled) {
                 push_event(Event::CarPluggedIn);
+
+                // Try HLC by setting PWM to 5%
+                set_pwm_DC_given = 0.05;
+
                 // read pp current only once when A => B
                 read_pp_state(ppcurr_State);
                 if (memo_ppcurr_State != ppcurr_State){
