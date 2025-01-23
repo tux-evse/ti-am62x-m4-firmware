@@ -122,6 +122,7 @@ void FSM::run() {
             break;
 
         case CPState::A:
+            DebugP_log("STATE A, previous: %d current : %d  \r\n",prev_state, ppcurr_State);
             use_three_phases_latch = use_three_phases;
             set_pwm_off();
             simplified_mode = false;
@@ -130,6 +131,7 @@ void FSM::run() {
             // Table A.6: Sequence 2.1 Unplug at state Bx (or any other
             // state) Table A.6: Sequence 2.2 Unplug at state Cx, Dx
             if (prev_state != CPState::A && prev_state != CPState::Disabled && prev_state != CPState::F) {
+                DebugP_log("STATE A - Initialize \r\n");
                 push_event(Event::CarRequestedStopPower);
                 power_off();
                 push_event(Event::CarUnplugged);
@@ -150,7 +152,7 @@ void FSM::run() {
             // Table A.6: Sequence 7 EV stops charging
             // Table A.6: Sequence 8.2 EV supply equipment
             // responds to EV opens S2 (w/o PWM)
-
+            DebugP_log("STATE B, previous: %d current : %d  \r\n",prev_state, ppcurr_State);
 
             if (prev_state != CPState::A && prev_state != CPState::B) {
                 push_event(Event::CarRequestedStopPower);
@@ -305,6 +307,7 @@ void FSM::run() {
 
         case CPState::D:
             // Table A.6: Sequence 1.2 Plug-in (w/ventilation)
+            DebugP_log("STATE D, previous: %d current : %d  \r\n",prev_state, ppcurr_State);
             if (prev_state == CPState::A) {
                 push_event(Event::CarPluggedIn);
                 push_event(Event::CarRequestedPower);
@@ -353,6 +356,7 @@ void FSM::run() {
             break;
 
         case CPState::E:
+            DebugP_log("STATE E, previous: %d current : %d  \r\n",prev_state, ppcurr_State);
             if (prev_state != cur_state)
                 push_event(Event::Error_E);
             if (prev_state == CPState::B || prev_state == CPState::C || prev_state == CPState::D) {
