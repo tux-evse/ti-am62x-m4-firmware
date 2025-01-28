@@ -161,6 +161,12 @@ void FSM::run() {
                 power_off();
             }
 
+            // Initialize Slac Status for C=>A unplug
+            if (prev_state == CPState::A) {
+                DebugP_log("STATE B, Initialize SLAC ");
+                FsmSetSlacStatus = 1;
+            }
+
             ventilated_charging_active = false;
 
             // Table A.6: Sequence 1.1 Plug-in
